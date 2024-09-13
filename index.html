@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
             height: 100vh;
             width: 100vw;
         }
+
         #quadkey-container {
             position: absolute;
             top: 20px;
@@ -25,16 +27,19 @@
             z-index: 1000;
             font-family: Arial, sans-serif;
         }
+
         #quadkey-container h1 {
             margin: 0;
             font-size: 24px;
             font-weight: bold;
         }
+
         #zoom-select {
             margin-top: 10px;
             padding: 5px;
             font-size: 16px;
         }
+
         #quadkey-output {
             margin-top: 10px;
             font-size: 14px;
@@ -42,124 +47,126 @@
         }
     </style>
 </head>
+
 <body>
 
-<div id="map"></div>
-<div id="quadkey-container">
-    <h1>What the Quad</h1>
-    <div><strong>Select Zoom Level:</strong>
-        <select id="zoom-select">
-            <option value="1">Zoom 1</option>
-            <option value="2">Zoom 2</option>
-            <option value="3">Zoom 3</option>
-            <option value="4">Zoom 4</option>
-            <option value="5">Zoom 5</option>
-            <option value="6">Zoom 6</option>
-            <option value="7" selected>Zoom 7</option>
-            <option value="8">Zoom 8</option>
-            <option value="9">Zoom 9</option>
-            <option value="10">Zoom 10</option>
-            <option value="11">Zoom 11</option>
-            <option value="12">Zoom 12</option>
-            <option value="13">Zoom 13</option>
-            <option value="14">Zoom 14</option>
-            <option value="15">Zoom 15</option>
-            <option value="16">Zoom 16</option>
-            <option value="17">Zoom 17</option>
-            <option value="18">Zoom 18</option>
-            <option value="19">Zoom 19</option>
-            <option value="20">Zoom 20</option>
-        </select>
+    <div id="map"></div>
+    <div id="quadkey-container">
+        <h1>What the Quad</h1>
+        <div><strong>Select Zoom Level:</strong>
+            <select id="zoom-select">
+                <option value="1">Zoom 1</option>
+                <option value="2">Zoom 2</option>
+                <option value="3">Zoom 3</option>
+                <option value="4">Zoom 4</option>
+                <option value="5">Zoom 5</option>
+                <option value="6">Zoom 6</option>
+                <option value="7" selected>Zoom 7</option>
+                <option value="8">Zoom 8</option>
+                <option value="9">Zoom 9</option>
+                <option value="10">Zoom 10</option>
+                <option value="11">Zoom 11</option>
+                <option value="12">Zoom 12</option>
+                <option value="13">Zoom 13</option>
+                <option value="14">Zoom 14</option>
+                <option value="15">Zoom 15</option>
+                <option value="16">Zoom 16</option>
+                <option value="17">Zoom 17</option>
+                <option value="18">Zoom 18</option>
+                <option value="19">Zoom 19</option>
+                <option value="20">Zoom 20</option>
+            </select>
+        </div>
+        <div id="quadkey-output">Click on the map to get the quadkey</div>
     </div>
-    <div id="quadkey-output">Click on the map to get the quadkey</div>
-</div>
 
-<script>
-    // Initialize map
-    var map = L.map('map').setView([45.933841, 46.408825], 5); // Set default view
+    <script>
+        // Initialize map
+        var map = L.map('map').setView([45.933841, 46.408825], 5); // Set default view
 
-    // Add OpenStreetMap tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
 
-    // Function to normalize longitude between -180 and 180 degrees
-    function normalizeLongitude(lon) {
-        return ((lon + 180) % 360 + 360) % 360 - 180;
-    }
-
-    // Function to convert lat/lon to Bing quadkey
-    function latLonToQuadKey(lat, lon, zoomLevel) {
-        function toTileX(lon, zoom) {
-            return Math.floor(((lon + 180) / 360) * Math.pow(2, zoom)) % Math.pow(2, zoom);
+        // Function to normalize longitude between -180 and 180 degrees
+        function normalizeLongitude(lon) {
+            return ((lon + 180) % 360 + 360) % 360 - 180;
         }
 
-        function toTileY(lat, zoom) {
-            return Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
-        }
-
-        function tileXYToQuadKey(x, y, zoom) {
-            var quadKey = '';
-            for (var i = zoom; i > 0; i--) {
-                var digit = 0;
-                var mask = 1 << (i - 1);
-                if ((x & mask) !== 0) digit++;
-                if ((y & mask) !== 0) digit += 2;
-                quadKey += digit;
+        // Function to convert lat/lon to Bing quadkey
+        function latLonToQuadKey(lat, lon, zoomLevel) {
+            function toTileX(lon, zoom) {
+                return Math.floor(((lon + 180) / 360) * Math.pow(2, zoom)) % Math.pow(2, zoom);
             }
-            return quadKey;
+
+            function toTileY(lat, zoom) {
+                return Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
+            }
+
+            function tileXYToQuadKey(x, y, zoom) {
+                var quadKey = '';
+                for (var i = zoom; i > 0; i--) {
+                    var digit = 0;
+                    var mask = 1 << (i - 1);
+                    if ((x & mask) !== 0) digit++;
+                    if ((y & mask) !== 0) digit += 2;
+                    quadKey += digit;
+                }
+                return quadKey;
+            }
+
+            var tileX = toTileX(lon, zoomLevel);
+            var tileY = toTileY(lat, zoomLevel);
+            return tileXYToQuadKey(tileX, tileY, zoomLevel);
         }
 
-        var tileX = toTileX(lon, zoomLevel);
-        var tileY = toTileY(lat, zoomLevel);
-        return tileXYToQuadKey(tileX, tileY, zoomLevel);
-    }
+        // Convert tileX, tileY to lat/lng bounds
+        function tileToBounds(x, y, zoom) {
+            var n = Math.pow(2, zoom);
+            var lon1 = (x / n) * 360.0 - 180.0;
+            var lat1 = Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180.0 / Math.PI;
+            var lon2 = ((x + 1) / n) * 360.0 - 180.0;
+            var lat2 = Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + 1) / n))) * 180.0 / Math.PI;
 
-    // Convert tileX, tileY to lat/lng bounds
-    function tileToBounds(x, y, zoom) {
-        var n = Math.pow(2, zoom);
-        var lon1 = (x / n) * 360.0 - 180.0;
-        var lat1 = Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180.0 / Math.PI;
-        var lon2 = ((x + 1) / n) * 360.0 - 180.0;
-        var lat2 = Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + 1) / n))) * 180.0 / Math.PI;
+            return [[lat1, lon1], [lat2, lon2]]; // SW and NE corners
+        }
 
-        return [[lat1, lon1], [lat2, lon2]]; // SW and NE corners
-    }
+        // Function to get the selected zoom level from the dropdown
+        function getSelectedZoomLevel() {
+            return parseInt(document.getElementById('zoom-select').value);
+        }
 
-    // Function to get the selected zoom level from the dropdown
-    function getSelectedZoomLevel() {
-        return parseInt(document.getElementById('zoom-select').value);
-    }
+        var currentQuadkeyLayer = null; // Store the current quadkey box layer
 
-    var currentQuadkeyLayer = null; // Store the current quadkey box layer
+        // Handle map click event
+        map.on('click', e => {
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+            const normalizedLon = normalizeLongitude(lon);
+            const zoomLevel = getSelectedZoomLevel();
 
-    // Handle map click event
-    map.on('click', e => {
-        const lat = e.latlng.lat;
-        const lon = e.latlng.lng;
-        const normalizedLon = normalizeLongitude(lon);
-        const zoomLevel = getSelectedZoomLevel();
+            // Calculate the tile X and tile Y using the wrapped logic
+            const tileX = Math.floor(((lon + 180) / 360) * Math.pow(2, zoomLevel)) % Math.pow(2, zoomLevel);
+            const tileY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoomLevel));
 
-        // Calculate the tile X and tile Y using the wrapped logic
-        const tileX = Math.floor(((lon + 180) / 360) * Math.pow(2, zoomLevel)) % Math.pow(2, zoomLevel);
-        const tileY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoomLevel));
+            // Calculate quadkey
+            const quadkey = latLonToQuadKey(lat, lon, zoomLevel);
 
-        // Calculate quadkey
-        const quadkey = latLonToQuadKey(lat, lon, zoomLevel);
+            // Draw bounding box for the tile
+            const bounds = tileToBounds(tileX, tileY, zoomLevel);
+            if (currentQuadkeyLayer) map.removeLayer(currentQuadkeyLayer);
+            currentQuadkeyLayer = L.rectangle(bounds, { color: '#ff7800', weight: 2 }).addTo(map);
 
-        // Draw bounding box for the tile
-        const bounds = tileToBounds(tileX, tileY, zoomLevel);
-        if (currentQuadkeyLayer) map.removeLayer(currentQuadkeyLayer);
-        currentQuadkeyLayer = L.rectangle(bounds, { color: '#ff7800', weight: 2 }).addTo(map);
-
-        // Update the output with quadkey and Z/X/Y tile information
-        document.getElementById('quadkey-output').innerHTML = `
+            // Update the output with quadkey and Z/X/Y tile information
+            document.getElementById('quadkey-output').innerHTML = `
             Quadkey: ${quadkey} (Zoom: ${zoomLevel})<br>
             Lat: ${lat.toFixed(6)}, Lon: ${normalizedLon.toFixed(6)}<br>
             Tile: Z: ${zoomLevel}, X: ${tileX}, Y: ${tileY}
         `;
-    });
-</script>
+        });
+    </script>
 
 </body>
+
 </html>
