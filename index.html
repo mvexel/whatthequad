@@ -23,30 +23,97 @@
             transform: translateX(-50%);
             background-color: white;
             padding: 20px;
-            border: 1px solid black;
-            border-radius: 8px;
+            border: 1px solid #ccc;
+            border-radius: 12px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
             z-index: 1000;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-width: 300px;
         }
 
         #quadkey-container h1 {
-            margin: 0;
+            margin: 0 0 15px 0;
             font-size: 24px;
-            font-weight: bold;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .zoom-section {
+            margin: 15px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
         }
 
         #zoom-select {
-            margin-top: 10px;
-            padding: 5px;
-            font-size: 16px;
+            margin-left: 10px;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: white;
         }
 
         #quadkey-output {
-            margin-top: 10px;
+            margin-top: 15px;
             font-size: 14px;
-            color: #333;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .output-row {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .output-label {
+            font-weight: 500;
+            color: #666;
+            min-width: 80px;
+            text-align: left;
+        }
+
+        .copyable {
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 13px;
+            color: #495057;
+            transition: all 0.2s ease;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .copyable:hover {
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+            transform: translateY(-1px);
+        }
+
+        .copyable:active {
+            background-color: #dee2e6;
+            transform: translateY(0);
+        }
+
+        .source-link {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 11px;
+            color: #999;
+            text-decoration: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .source-link:hover {
+            opacity: 1;
+            color: #666;
         }
     </style>
 </head>
@@ -56,7 +123,8 @@
     <div id="map"></div>
     <div id="quadkey-container">
         <h1>What the Quad</h1>
-        <div><strong>Select Zoom Level:</strong>
+        <div class="zoom-section">
+            <strong>Select Zoom Level:</strong>
             <select id="zoom-select">
                 <option value="1">Zoom 1</option>
                 <option value="2">Zoom 2</option>
@@ -81,6 +149,7 @@
             </select>
         </div>
         <div id="quadkey-output">Click on the map to get the quadkey</div>
+        <a href="https://github.com/mvexel/whatthequad" target="_blank" class="source-link">source</a>
     </div>
 
     <script>
@@ -142,6 +211,22 @@
 
         var currentQuadkeyLayer = null; // Store the current quadkey box layer
 
+        // Function to copy text to clipboard
+        function copyToClipboard(text, element) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = element.textContent;
+                element.textContent = 'Copied!';
+                element.style.backgroundColor = '#90EE90';
+                setTimeout(() => {
+                    element.textContent = originalText;
+                    element.style.backgroundColor = '#f0f0f0';
+                }, 1000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Copy failed - please select and copy manually');
+            });
+        }
+
         // Handle map click event
         map.on('click', e => {
             const lat = e.latlng.lat;
@@ -160,12 +245,31 @@
             const bounds = tileToBounds(tileX, tileY, zoomLevel);
             if (currentQuadkeyLayer) map.removeLayer(currentQuadkeyLayer);
             currentQuadkeyLayer = L.rectangle(bounds, { color: '#ff7800', weight: 2 }).addTo(map);
+            
+            // Pan and zoom to fit the tile with buffer
+            const tileBounds = L.latLngBounds(bounds);
+            map.fitBounds(tileBounds, { 
+                padding: [50, 50],
+                maxZoom: Math.max(zoomLevel + 2, map.getZoom())
+            });
 
             // Update the output with quadkey and Z/X/Y tile information
+            const latLonText = `${lat.toFixed(6)},${normalizedLon.toFixed(6)}`;
+            const tileText = `${zoomLevel}/${tileX}/${tileY}`;
+            
             document.getElementById('quadkey-output').innerHTML = `
-            Quadkey: ${quadkey} (Zoom: ${zoomLevel})<br>
-            Lat: ${lat.toFixed(6)}, Lon: ${normalizedLon.toFixed(6)}<br>
-            Tile: Z: ${zoomLevel}, X: ${tileX}, Y: ${tileY}
+            <div class="output-row">
+                <span class="output-label">Quadkey:</span>
+                <span class="copyable" onclick="copyToClipboard('${quadkey}', this)">${quadkey}</span>
+            </div>
+            <div class="output-row">
+                <span class="output-label">Lat,Lon:</span>
+                <span class="copyable" onclick="copyToClipboard('${latLonText}', this)">${latLonText}</span>
+            </div>
+            <div class="output-row">
+                <span class="output-label">Z/X/Y:</span>
+                <span class="copyable" onclick="copyToClipboard('${tileText}', this)">${tileText}</span>
+            </div>
         `;
         });
     </script>
