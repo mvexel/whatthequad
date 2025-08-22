@@ -256,6 +256,13 @@
             // Update the output with quadkey and Z/X/Y tile information
             const latLonText = `${lat.toFixed(6)},${normalizedLon.toFixed(6)}`;
             const tileText = `${zoomLevel}/${tileX}/${tileY}`;
+
+            // Calculate bounding box corners
+            const nw_corner = bounds[0];
+            const se_corner = bounds[1];
+            const sw_corner = [se_corner[0], nw_corner[1]];
+            const ne_corner = [nw_corner[0], se_corner[1]];
+            const bbox_string = `${sw_corner[1].toFixed(6)},${sw_corner[0].toFixed(6)},${ne_corner[1].toFixed(6)},${ne_corner[0].toFixed(6)}`;
             
             document.getElementById('quadkey-output').innerHTML = `
             <div class="output-row">
@@ -269,6 +276,10 @@
             <div class="output-row">
                 <span class="output-label">Z/X/Y:</span>
                 <span class="copyable" onclick="copyToClipboard('${tileText}', this)">${tileText}</span>
+            </div>
+            <div class="output-row">
+                <span class="output-label">Bbox:</span>
+                <span class="copyable" onclick="copyToClipboard('${bbox_string}', this)">${bbox_string}</span>
             </div>
         `;
         });
