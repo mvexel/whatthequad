@@ -5,12 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>What the Quad?</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body {
             margin: 0;
         }
+
         #map {
             height: 100vh;
             width: 100vw;
@@ -245,10 +246,10 @@
             const bounds = tileToBounds(tileX, tileY, zoomLevel);
             if (currentQuadkeyLayer) map.removeLayer(currentQuadkeyLayer);
             currentQuadkeyLayer = L.rectangle(bounds, { color: '#ff7800', weight: 2 }).addTo(map);
-            
+
             // Pan and zoom to fit the tile with buffer
             const tileBounds = L.latLngBounds(bounds);
-            map.fitBounds(tileBounds, { 
+            map.fitBounds(tileBounds, {
                 padding: [50, 50],
                 maxZoom: Math.max(zoomLevel + 2, map.getZoom())
             });
@@ -263,7 +264,7 @@
             const sw_corner = [se_corner[0], nw_corner[1]];
             const ne_corner = [nw_corner[0], se_corner[1]];
             const bbox_string = `${sw_corner[1].toFixed(6)},${sw_corner[0].toFixed(6)},${ne_corner[1].toFixed(6)},${ne_corner[0].toFixed(6)}`;
-            
+
             document.getElementById('quadkey-output').innerHTML = `
             <div class="output-row">
                 <span class="output-label">Quadkey:</span>
